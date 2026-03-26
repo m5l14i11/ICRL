@@ -1,0 +1,35 @@
+===============Example 1===============
+Example Problem: industrial city in germany on the rhine herne canal?
+
+Example Solution: <think>I know that Herne is a city in Germany located near the Rhine-Ruhr area. It's possible that this city has an industrial history related to the Rhine canal. I should check if Herne is indeed an industrial city on the Rhine-Herne canal.</think> <search>industrial city in Germany on the Rhine-Herne canal</search>
+<information>
+Doc 1(Title: "Industrial city in Germany on the Rhine-Herne Canal (10) ...") A commercial center and river port in western Germany on the Rhine River. KOLN. Capital of Hesse state in western Germany, on the Rhine opposite Mainz (9).
+Doc 2(Title: "Bottrop") Bottrop is a city in west-central Germany, on the Rhine-Herne Canal, in North Rhine-Westphalia. Located in the Ruhr industrial area, Bottrop adjoins Essen, ...
+Doc 3(Title: "TGN Full Record Display, English (Getty Research)") Note: The city of Oberhausen is situated on the Rhine-Herne-Canal in the industrial Ruhr district in the northwestern German state of North Rhine-Westphalia.
+
+</information>
+<answer> Bottrop </answer>
+
+===============Example 2===============
+Example Problem: when is the next episode of flash airing?
+
+Example Solution: <think>I don't have real-time data access, so I'll need to search this. Let's find out when the next episode of Flash is airing.</think> <search>next episode airing time of Flash</search>
+<information>
+Doc 1(Title: "The Flash TV Show Air Dates & Track Episodes") Track The Flash new episodes, see when is the next episode air date, series schedule, trailer, countdown, calendar and more. TV show guide for The Flash.
+Doc 2(Title: "The Flash Next Episode Air Date & Countdown") The Flash Air Dates ; Wednesday May 03, 2023 · S09E10 - A New World, Part 1: Reunions · May 03, 2023 17:00 ; Wednesday May 10, 2023 · S09E11 - A New World, Part 2: ...
+Doc 3(Title: "The Flash (2014 — 2023) TV show") Air dates for all new episodes and upcoming seasons of 'The Flash' (TV show) ... The Fire Next Time. March 23, 2022. 8.09. Phantoms. March 30, 2022. 8.10. Reckless.
+
+</information>
+<answer> May 3, 2023 </answer>
+
+===============Example 3===============
+Example Problem: what is the meaning of gorakh dhanda in urdu?
+
+Example Solution: <think>I am not sure about the exact meaning of "gorakh dhanda" in Urdu. I will need to search this.</think> <search>meaning of gorakh dhanda in Urdu</search>
+<information>
+Doc 1(Title: "What is the meaning of the Urdu word, Gorakh Danda?") "Gorakh Dhanda" is an idiom which means "something that is hard to understand". It originates from Guru Gorakh Nath, an eccentric yogi & ...
+Doc 2(Title: "Urdu Word گورکھ دھندا - Gorkh Dhanda Meaning in English ...") The Urdu Word گورکھ دھندا Meaning in English is Unpuzzled. The other similar words are Mushkil Masla, Pareshani, Herani, Uljan, Mama, Uqda, Gorkh Dhanda and ...
+Doc 3(Title: "Gorakh Dhanda. (Urdu: گورکھدھندا,) Means "complicated…") Gorakh Dhanda (Urdu: گورکھدھندا,) Means "complicated business," popular from Naz Khialvi's poem "Tum ek gorakh dhanda ho" sung by the ...
+
+</information>
+<answer> something that is hard to understand </answer>

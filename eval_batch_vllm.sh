@@ -1,5 +1,5 @@
 #!/bin/bash
-# Advanced Batch Evaluation Script for Search-R1 Checkpoints with vLLM
+# Advanced Batch Evaluation Script for ICRL Checkpoints with vLLM
 #
 # This script provides fast evaluation using vLLM's efficient inference
 #
@@ -17,6 +17,7 @@ export HF_HOME="~/.cache/huggingface"
 
 # Default values
 CHECKPOINT=""
+CHECKPOINT_REF=""
 CHECKPOINT_DIR="./checkpoints"
 CHECKPOINT_STEP="global_step_50"
 OUTPUT_BASE_DIR="./eval_results"
@@ -41,14 +42,18 @@ EVAL_ONLY=false
 # Help Function
 # ============================================================================
 show_help() {
-    echo "Search-R1 Batch Evaluation Script"
+    echo "ICRL Batch Evaluation Script"
     echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --checkpoint PATH      Path to model checkpoint (required if not using --checkpoint_name)"
-    echo "  --checkpoint_name NAME Name of checkpoint in $CHECKPOINT_DIR"
+    echo "  --checkpoint PATH      Full path or HuggingFace model ID"
+    echo "  --checkpoint_ref REF   Checkpoint ref like model_name/global_step_50"
+    echo "  --checkpoint_name NAME Model/checkpoint name under $CHECKPOINT_DIR"
+    echo "  --model_name NAME      Alias of --checkpoint_name"
     echo "  --checkpoint_step STEP Checkpoint step (default: $CHECKPOINT_STEP)"
+    echo "  --global_step STEP     Alias of --checkpoint_step"
+    echo "  --checkpoint_dir DIR   Root directory for named checkpoints (default: $CHECKPOINT_DIR)"
     echo "  --output_dir DIR       Output directory (default: $OUTPUT_BASE_DIR)"
     echo "  --data_dir DIR         Data directory (default: $DATA_DIR)"
     echo "  --datasets LIST        Space-separated list of datasets (default: $DATASETS)"
@@ -72,6 +77,7 @@ show_help() {
     echo "Examples:"
     echo "  # Evaluate with standard inference"
     echo "  $0 --checkpoint /path/to/model --datasets \"triviaqa popqa\""
+    echo "  $0 --checkpoint_ref icrl-grpo-qwen2.5-7B/global_step_50 --datasets \"triviaqa popqa\""
     echo ""
     echo "  # Evaluate with vLLM (faster)"
     echo "  $0 --checkpoint /path/to/model --datasets \"triviaqa popqa hotpotqa\" --use_vllm"
@@ -92,12 +98,28 @@ while [[ $# -gt 0 ]]; do
             CHECKPOINT="$2"
             shift 2
             ;;
+        --checkpoint_ref)
+            CHECKPOINT_REF="$2"
+            shift 2
+            ;;
         --checkpoint_name)
+            CHECKPOINT_NAME="$2"
+            shift 2
+            ;;
+        --model_name)
             CHECKPOINT_NAME="$2"
             shift 2
             ;;
         --checkpoint_step)
             CHECKPOINT_STEP="$2"
+            shift 2
+            ;;
+        --global_step)
+            CHECKPOINT_STEP="$2"
+            shift 2
+            ;;
+        --checkpoint_dir)
+            CHECKPOINT_DIR="$2"
             shift 2
             ;;
         --output_dir)
@@ -187,13 +209,33 @@ export CUDA_VISIBLE_DEVICES=$CUDA_DEVICES
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+resolve_checkpoint_ref() {
+    local ref="$1"
+
+    if [[ "$ref" == */actor/* ]]; then
+        echo "$CHECKPOINT_DIR/$ref"
+        return
+    fi
+
+    if [[ "$ref" == */* ]]; then
+        local model_name="${ref%/*}"
+        local step_name="${ref##*/}"
+        echo "$CHECKPOINT_DIR/$model_name/actor/$step_name"
+        return
+    fi
+
+    echo "$CHECKPOINT_DIR/$ref/actor/$CHECKPOINT_STEP"
+}
+
 # Build checkpoint path
-if [ -n "$CHECKPOINT_NAME" ]; then
+if [ -n "$CHECKPOINT_REF" ]; then
+    CHECKPOINT="$(resolve_checkpoint_ref "$CHECKPOINT_REF")"
+elif [ -n "$CHECKPOINT_NAME" ]; then
     CHECKPOINT="$CHECKPOINT_DIR/$CHECKPOINT_NAME/actor/$CHECKPOINT_STEP"
 fi
 
 if [ -z "$CHECKPOINT" ] && [ "$CONVERT_ONLY" = false ]; then
-    echo "Error: --checkpoint or --checkpoint_name is required"
+    echo "Error: --checkpoint, --checkpoint_ref, or --checkpoint_name is required"
     show_help
     exit 1
 fi
@@ -206,7 +248,7 @@ else
 fi
 
 echo "============================================================"
-echo "Search-R1 Batch Evaluation"
+echo "ICRL Batch Evaluation"
 echo "============================================================"
 echo "Checkpoint: $CHECKPOINT"
 echo "Output Dir: $OUTPUT_DIR"

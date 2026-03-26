@@ -9,13 +9,17 @@ set -e
 export HUGGINGFACE_HUB_CACHE="~/.cache/huggingface"
 export HF_HOME="~/.cache/huggingface"
 export RAY_TMPDIR="/tmp/ray"
-export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
 export VLLM_ATTENTION_BACKEND=XFORMERS
+export N_GPUS=${N_GPUS:-4}
 
 # ==================== Configuration ====================
 WAND_PROJECT='ICRL-Curriculum'
 BASE_MODEL='Qwen/Qwen2.5-7B-Instruct'
 CHECKPOINT_DIR='./checkpoints'
+STAGE1_DATA_DIR=${STAGE1_DATA_DIR:-data/nq_search_fewshot}
+STAGE2_DATA_DIR=${STAGE2_DATA_DIR:-data/nq_search_2shot}
+STAGE3_DATA_DIR=${STAGE3_DATA_DIR:-data/nq_search_0shot}
 
 # Training steps per stage
 STAGE1_STEPS=100  # 3-shot
@@ -91,7 +95,7 @@ run_training_stage() {
         +trainer.val_only=false \
         +trainer.val_before_train=true \
         trainer.default_hdfs_dir=null \
-        trainer.n_gpus_per_node=4 \
+        trainer.n_gpus_per_node=$N_GPUS \
         trainer.nnodes=1 \
         trainer.save_freq=$SAVE_FREQ \
         trainer.test_freq=10 \
@@ -117,7 +121,7 @@ STAGE1_EXPERIMENT="icrl-stage1-3shot"
 run_training_stage 1 3 $STAGE1_STEPS \
     "$BASE_MODEL" \
     "$STAGE1_EXPERIMENT" \
-    "data/nq_search_fewshot"  # 3-shot data
+    "$STAGE1_DATA_DIR"  # 3-shot data
 
 # Get the latest checkpoint from stage 1
 STAGE1_CKPT="$CHECKPOINT_DIR/$STAGE1_EXPERIMENT/actor/global_step_${STAGE1_STEPS}"
@@ -132,7 +136,7 @@ STAGE2_EXPERIMENT="icrl-stage2-2shot"
 run_training_stage 2 2 $STAGE2_STEPS \
     "$STAGE1_CKPT" \
     "$STAGE2_EXPERIMENT" \
-    "data/nq_search_2shot"  # 2-shot data
+    "$STAGE2_DATA_DIR"  # 2-shot data
 
 # Get the latest checkpoint from stage 2
 STAGE2_CKPT="$CHECKPOINT_DIR/$STAGE2_EXPERIMENT/actor/global_step_${STAGE2_STEPS}"
@@ -146,7 +150,7 @@ STAGE3_EXPERIMENT="icrl-stage3-0shot"
 run_training_stage 3 0 $STAGE3_STEPS \
     "$STAGE2_CKPT" \
     "$STAGE3_EXPERIMENT" \
-    "data/nq_search_0shot"  # 0-shot data
+    "$STAGE3_DATA_DIR"  # 0-shot data
 
 echo "=========================================="
 echo "All stages completed!"

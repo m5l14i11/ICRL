@@ -24,7 +24,11 @@ with open(os.path.join(version_folder, 'verl/version/version')) as f:
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
-    install_requires = [item.strip() for item in required if item.strip()[0] != '#']
+    install_requires = [
+        item.strip()
+        for item in required
+        if item.strip() and not item.strip().startswith(('#', '-'))
+    ]
 
 extras_require = {
     'test': ['pytest', 'yapf']

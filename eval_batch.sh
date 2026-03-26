@@ -1,13 +1,14 @@
 #!/bin/bash
-# Batch Evaluation Script for Search-R1 Checkpoints
+# Batch Evaluation Script for ICRL Checkpoints
 # This script evaluates trained model checkpoints on various QA datasets
 #
 # Usage:
-#   ./eval_batch.sh [checkpoint_step]
+#   ./eval_batch.sh [checkpoint_ref]
 #
 # Example:
-#   ./eval_batch.sh global_step_50    # Evaluate checkpoint at step 50
-#   ./eval_batch.sh                    # Use default checkpoint
+#   ./eval_batch.sh icrl-grpo-qwen2.5-7B/global_step_50
+#   ./eval_batch.sh global_step_50
+#   ./eval_batch.sh
 
 # ============================================================================
 # Environment Setup
@@ -15,15 +16,43 @@
 export HUGGINGFACE_HUB_CACHE="~/.cache/huggingface"
 export HF_HOME="~/.cache/huggingface"
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 
 # ============================================================================
 # Checkpoint Configuration
 # ============================================================================
 # Default checkpoint directory and step
-CHECKPOINT_DIR="./checkpoints/icrl-grpo-qwen2.5-7B/actor"
-CHECKPOINT_STEP="${1:-global_step_50}"
-CHECKPOINT_PATH="$CHECKPOINT_DIR/$CHECKPOINT_STEP"
+CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-./checkpoints}
+DEFAULT_MODEL_NAME=${DEFAULT_MODEL_NAME:-icrl-grpo-qwen2.5-7B}
+CHECKPOINT_REF="${1:-}"
+CHECKPOINT_STEP=${CHECKPOINT_STEP:-global_step_50}
+
+resolve_checkpoint_ref() {
+    local ref="$1"
+
+    if [ -z "$ref" ]; then
+        echo "$CHECKPOINT_ROOT/$DEFAULT_MODEL_NAME/actor/$CHECKPOINT_STEP"
+        return
+    fi
+
+    if [[ "$ref" == */actor/* ]]; then
+        echo "$CHECKPOINT_ROOT/$ref"
+        return
+    fi
+
+    if [[ "$ref" == */* ]]; then
+        local model_name="${ref%/*}"
+        local step_name="${ref##*/}"
+        echo "$CHECKPOINT_ROOT/$model_name/actor/$step_name"
+        return
+    fi
+
+    echo "$CHECKPOINT_ROOT/$DEFAULT_MODEL_NAME/actor/$ref"
+}
+
+CHECKPOINT_PATH="$(resolve_checkpoint_ref "$CHECKPOINT_REF")"
+CHECKPOINT_DIR="$(dirname "$CHECKPOINT_PATH")"
+CHECKPOINT_STEP="$(basename "$CHECKPOINT_PATH")"
 
 # Alternative checkpoints (uncomment to use):
 # CHECKPOINT_PATH="Qwen/Qwen2.5-7B-Instruct"  # Base model
@@ -32,7 +61,7 @@ CHECKPOINT_PATH="$CHECKPOINT_DIR/$CHECKPOINT_STEP"
 # ============================================================================
 # Evaluation Configuration
 # ============================================================================
-OUTPUT_DIR="./eval_results/$(basename $CHECKPOINT_DIR)_${CHECKPOINT_STEP}"
+OUTPUT_DIR="./eval_results/$(basename "$(dirname "$CHECKPOINT_DIR")")_${CHECKPOINT_STEP}"
 DATA_DIR="./data/eval"
 SEARCH_URL="http://127.0.0.1:8000/retrieve"
 
@@ -164,7 +193,7 @@ evaluate_dataset() {
 # Main
 # ============================================================================
 
-print_header "Search-R1 Batch Evaluation"
+print_header "ICRL Batch Evaluation"
 
 echo "Configuration:"
 echo "  Checkpoint: $CHECKPOINT_PATH"

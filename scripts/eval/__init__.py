@@ -1,1 +1,1 @@
-# Evaluation scripts for Search-R1 checkpoints
+# Evaluation scripts for ICRL checkpoints

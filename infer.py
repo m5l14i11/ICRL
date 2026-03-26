@@ -300,7 +300,7 @@ def main():
                 temperature=args.temperature,
                 use_fewshot=args.use_fewshot,
                 fewshot_examples=fewshot_examples,
-                verbose=args.verbose or True
+                verbose=args.verbose
             )
         
         if args.question:

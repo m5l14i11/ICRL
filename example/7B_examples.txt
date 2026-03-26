@@ -1,0 +1,35 @@
+===============Example 1===============
+Example Problem: who wrote the book the origin of species?
+
+Example Solution: <think>I know that "The Origin of Species" is a famous book about evolution, but I'm not sure who wrote it. I should search this.</think> <search>who wrote The Origin of Species</search>
+<information>
+Doc 1(Title: "On the Origin of Species") On the Origin of Species is a work of scientific literature by Charles Darwin that is considered to be the foundation of evolutionary biology.
+Doc 2(Title: "Darwin's "On the Origin of Species" - First Printing") The first printing of Charles Darwin's book, On the Origin of Species by Means of Natural Selection, or the Preservation of Favoured Races in the Struggle for ...
+Doc 3(Title: "Charles Darwin and the Origin of Life - PMC - PubMed Central") by J Peretó · 2009 · Cited by 179 — When Charles Darwin published The Origin of Species 150 years ago he consciously avoided discussing the origin of life.
+
+</information>
+<answer> Charles Darwin </answer>
+
+===============Example 2===============
+Example Problem: who played adaline in the age of adaline?
+
+Example Solution: <think>I don't have this information in my knowledge base. I will need to search this.</think> <search>who played adaline in the age of adaline?</search>
+<information>
+Doc 1(Title: "The Age of Adaline") The film stars Blake Lively as Adaline, with Michiel Huisman, Harrison Ford, Kathy Baker, Amanda Crew, and Ellen Burstyn. Narrated by Hugh Ross, the story ...
+Doc 2(Title: "The Age of Adaline (2015)") Blake Lively · Adaline Bowman ; Michiel Huisman · Ellis Jones ; Harrison Ford · William Jones ; Ellen Burstyn · Flemming ; Kathy Baker · Kathy Jones.
+Doc 3(Title: "The Age of Adaline - Full Cast & Crew") Writer · J. Mills Goodloe · Salvador Paskowitz. Actor. 20 Credits. Blake Lively as Adaline Bowman. Blake Lively. Adaline Bowman · Michiel Huisman as Ellis Jones.
+
+</information>
+<answer> Blake Lively </answer>
+
+===============Example 3===============
+Example Problem: the outer layer of the skin that contains no blood or nerve supply is the?
+
+Example Solution: <think>I know that the outer layer of the skin is called the epidermis, but I'm not sure if it contains blood or nerve supply. Let me check.</think> <search>does the epidermis contain blood or nerve supply</search>
+<information>
+Doc 1(Title: "Anatomy, Skin (Integument), Epidermis - StatPearls - NCBI - NIH") by H Yousef · 2024 · Cited by 801 — Blood supply to the epidermis is through the superficial arteriovenous plexus (subepidermal/papillary plexus). These vessels are important ...
+Doc 2(Title: "Epidermis") The epidermis itself has no blood supply and is nourished almost exclusively by diffused oxygen from the surrounding air. Cellular mechanisms for ...
+Doc 3(Title: "Skin Anatomy: Overview, Epidermis, Dermis") The epidermis contains no blood vessels and is entirely dependent on the underlying dermis for nutrient delivery and waste disposal via ...
+
+</information>
+<answer> epidermis </answer>

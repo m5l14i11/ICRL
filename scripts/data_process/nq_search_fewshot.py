@@ -20,13 +20,16 @@ import os
 import re
 import datasets
 from pathlib import Path
+from typing import List, Optional, Union
 
 from verl.utils.hdfs_io import copy, makedirs
 import argparse
 
 
 # Default path to few-shot examples file
-DEFAULT_EXAMPLES_FILE = Path(__file__).resolve().parents[2] / "example" / "fewshot_examples.txt"
+EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "example"
+DEFAULT_EXAMPLES_NAME = "fewshot_examples.txt"
+DEFAULT_EXAMPLES_FILE = EXAMPLES_DIR / DEFAULT_EXAMPLES_NAME
 
 
 # System prompt for few-shot (with examples)
@@ -61,7 +64,31 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_FEWSHOT
 PROBLEM_TEXT = "Now solve the following problem with the ability you just learned from the examples. Remember, DO NOT take the problem from examples as the problem you need to solve."
 
 
-def load_fewshot_examples(examples_file: str = None, num_examples: int = None) -> str:
+def list_available_example_files() -> List[str]:
+    """List selectable example text files under the example directory."""
+    if not EXAMPLES_DIR.exists():
+        return []
+    return sorted(path.name for path in EXAMPLES_DIR.glob("*.txt") if path.is_file())
+
+
+def resolve_examples_file(examples_name: Optional[str] = None, examples_file: Optional[str] = None) -> Path:
+    """Resolve the examples file from either a file name in example/ or an explicit path."""
+    if examples_file is not None:
+        return Path(examples_file)
+
+    available_files = list_available_example_files()
+    selected_name = examples_name or DEFAULT_EXAMPLES_NAME
+
+    if available_files and selected_name not in available_files:
+        available_str = ", ".join(available_files)
+        raise ValueError(
+            f"Unknown examples file '{selected_name}'. Available files in {EXAMPLES_DIR}: {available_str}"
+        )
+
+    return EXAMPLES_DIR / selected_name
+
+
+def load_fewshot_examples(examples_file: Optional[Union[str, Path]] = None, num_examples: Optional[int] = None) -> str:
     """Load few-shot examples from file.
     
     Args:
@@ -152,14 +179,19 @@ If you find no further external knowledge needed, you can directly provide the a
 
 
 if __name__ == '__main__':
+    available_example_files = list_available_example_files()
+    available_examples_help = ", ".join(available_example_files) if available_example_files else "no .txt files found"
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--local_dir', default='./data/nq_search_fewshot')
     parser.add_argument('--hdfs_dir', default=None)
     parser.add_argument('--template_type', type=str, default='fewshot', 
                         choices=['fewshot', 'zeroshot', 'base'],
-                        help='Template type: fewshot (with examples), zeroshot (no examples), or base (original Search-R1 format)')
+                        help='Template type: fewshot (with examples), zeroshot (no examples), or base (original ICRL base format)')
+    parser.add_argument('--examples_name', type=str, default=DEFAULT_EXAMPLES_NAME,
+                        help=f'Example file name under example/. Available: {available_examples_help}')
     parser.add_argument('--examples_file', type=str, default=None,
-                        help='Path to few-shot examples file')
+                        help='Explicit path to few-shot examples file. Overrides --examples_name if set.')
     parser.add_argument('--num_examples', type=int, default=None,
                         help='Number of few-shot examples to include (None for all, 1, 2, 3, etc.)')
     parser.add_argument('--train_data_num', type=int, default=None,
@@ -173,14 +205,16 @@ if __name__ == '__main__':
 
     # Load few-shot examples if using fewshot template
     fewshot_examples = ""
+    examples_path = None
     if args.template_type == 'fewshot':
-        fewshot_examples = load_fewshot_examples(args.examples_file, args.num_examples)
+        examples_path = resolve_examples_file(args.examples_name, args.examples_file)
+        fewshot_examples = load_fewshot_examples(examples_path, args.num_examples)
         num_ex_str = f"{args.num_examples} example(s)" if args.num_examples else "all examples"
-        print(f"Loaded {num_ex_str} ({len(fewshot_examples)} chars)")
+        print(f"Loaded {num_ex_str} from {examples_path} ({len(fewshot_examples)} chars)")
     elif args.template_type == 'zeroshot':
         print("Using zero-shot template (no examples)")
     else:
-        print("Using base template (original Search-R1 format)")
+        print("Using base template (original ICRL base format)")
 
     dataset = datasets.load_dataset('RUC-NLPIR/FlashRAG_datasets', 'nq')
 
@@ -196,7 +230,7 @@ if __name__ == '__main__':
         test_dataset = test_dataset.select(range(min(args.val_data_num, len(test_dataset))))
         print(f"Limited validation data to {len(test_dataset)} samples")
 
-    def make_map_fn(split, template_type, fewshot_examples, num_examples):
+    def make_map_fn(split, template_type, fewshot_examples, num_examples, examples_name):
         def process_fn(example, idx):
             if template_type == 'fewshot':
                 question = make_prefix_fewshot(example, fewshot_examples)
@@ -224,6 +258,7 @@ if __name__ == '__main__':
                     'split': split,
                     'index': idx,
                     'template_type': template_type,
+                    'examples_name': examples_name if template_type == 'fewshot' else None,
                     'num_examples': num_examples if template_type == 'fewshot' else 0,
                 }
             }
@@ -232,11 +267,11 @@ if __name__ == '__main__':
         return process_fn
 
     train_dataset = train_dataset.map(
-        function=make_map_fn('train', args.template_type, fewshot_examples, args.num_examples), 
+        function=make_map_fn('train', args.template_type, fewshot_examples, args.num_examples, examples_path.name if examples_path else None), 
         with_indices=True
     )
     test_dataset = test_dataset.map(
-        function=make_map_fn('test', args.template_type, fewshot_examples, args.num_examples), 
+        function=make_map_fn('test', args.template_type, fewshot_examples, args.num_examples, examples_path.name if examples_path else None), 
         with_indices=True
     )
 

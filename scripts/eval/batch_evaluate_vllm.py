@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fast batch evaluation using vLLM for Search-R1 checkpoints.
+Fast batch evaluation using vLLM for ICRL checkpoints.
 
 This script provides faster evaluation than the standard batch_evaluate.py
 by using vLLM's efficient batched inference.

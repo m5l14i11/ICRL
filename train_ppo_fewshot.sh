@@ -6,8 +6,9 @@ export HUGGINGFACE_HUB_CACHE="~/.cache/huggingface"
 export HF_HOME="~/.cache/huggingface"
 export RAY_TMPDIR="/tmp/ray"
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3
-export DATA_DIR='data/nq_search_0shot'
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
+export DATA_DIR=${DATA_DIR:-data/nq_search_0shot}
+export N_GPUS=${N_GPUS:-4}
 
 WAND_PROJECT='ICRL-PPO'
 
@@ -82,7 +83,7 @@ PYTHONUNBUFFERED=1 python3 -m verl.trainer.main_ppo_fewshot \
     +trainer.val_only=false \
     +trainer.val_before_train=true \
     trainer.default_hdfs_dir=null \
-    trainer.n_gpus_per_node=4 \
+    trainer.n_gpus_per_node=$N_GPUS \
     trainer.nnodes=1 \
     trainer.save_freq=30 \
     trainer.test_freq=10 \

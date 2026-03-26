@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Batch evaluation script for Search-R1 trained checkpoints on various QA datasets.
+Batch evaluation script for ICRL-trained checkpoints on various QA datasets.
 
 This script evaluates a trained model checkpoint on QA datasets using:
 1. Multi-turn web search capability (via retrieval API)
@@ -169,7 +169,7 @@ def extract_search_query(text: str) -> Optional[str]:
 
 
 class BatchEvaluator:
-    """Batch evaluator for Search-R1 checkpoints."""
+    """Batch evaluator for ICRL checkpoints."""
     
     def __init__(self, config: EvalConfig):
         self.config = config
@@ -520,7 +520,7 @@ class BatchEvaluator:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Batch evaluation for Search-R1 checkpoints")
+    parser = argparse.ArgumentParser(description="Batch evaluation for ICRL checkpoints")
     parser.add_argument('--checkpoint', type=str, required=True,
                         help='Path to the model checkpoint')
     parser.add_argument('--data_file', type=str, default=None,
