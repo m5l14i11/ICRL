@@ -68,9 +68,20 @@ class DataParallelPPOActor(BasePPOActor):
             attention_mask = micro_batch['attention_mask']
             position_ids = micro_batch['position_ids']
 
+            if batch_size == 0:
+                empty = input_ids.new_empty((0, response_length), dtype=torch.float32)
+                return empty, empty
+
+            if attention_mask.sum().item() == 0:
+                zeros = torch.zeros((batch_size, response_length), device=input_ids.device, dtype=torch.float32)
+                return zeros, zeros
+
             if self.use_remove_padding:
                 input_ids_rmpad, indices, *_ = unpad_input(input_ids.unsqueeze(-1),
                                                            attention_mask)  # input_ids_rmpad (total_nnz, ...)
+                if input_ids_rmpad.size(0) == 0:
+                    zeros = torch.zeros((batch_size, response_length), device=input_ids.device, dtype=torch.float32)
+                    return zeros, zeros
                 input_ids_rmpad = input_ids_rmpad.transpose(0, 1)  # (1, total_nnz)
 
                 # unpad the position_ids to align the rotary
@@ -177,6 +188,10 @@ class DataParallelPPOActor(BasePPOActor):
 
         select_keys = ['responses', 'input_ids', 'attention_mask', 'position_ids']
         batch = data.select(batch_keys=select_keys).batch
+        response_length = batch['responses'].size(-1)
+
+        if batch.batch_size[0] == 0:
+            return torch.empty((0, response_length), dtype=torch.float32)
 
         if use_dynamic_bsz:
             # split using dynamic bsz
@@ -190,6 +205,10 @@ class DataParallelPPOActor(BasePPOActor):
             with torch.no_grad():
                 _, log_probs = self._forward_micro_batch(micro_batch, temperature=temperature)
             log_probs_lst.append(log_probs)
+
+        if len(log_probs_lst) == 0:
+            return torch.empty((0, response_length), dtype=torch.float32)
+
         log_probs = torch.concat(log_probs_lst, dim=0)
 
         if use_dynamic_bsz:
